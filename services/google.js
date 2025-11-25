@@ -3,6 +3,7 @@ dotenv.config();
 
 import { google } from "googleapis";
 import fs from "fs";
+import path from "path";
 
 let keyFilePath = "./google.json";
 // ==========================================================
@@ -13,16 +14,28 @@ if (process.env.GOOGLE_KEY_BASE64) {
     "utf8"
   );
 
-  // Criar arquivo temporário no ambiente do Render
-  keyFilePath = "/tmp/google.json";
+  // Usar diretório seguro temporário
+  const tempDir = "/tmp"; // existe no Render
+  const localTmpDir = "./tmp"; // para local
+
+  // se estamos no Render, use /tmp
+  // se estamos localmente, crie ./tmp
+  const isRender = process.env.RENDER === "true";
+
+  const finalDir = isRender ? tempDir : localTmpDir;
+
+  if (!fs.existsSync(finalDir)) {
+    fs.mkdirSync(finalDir, { recursive: true });
+  }
+
+  keyFilePath = path.join(finalDir, "google.json");
 
   fs.writeFileSync(keyFilePath, decoded, { encoding: "utf8" });
 
-  console.log("✔ GOOGLE_KEY_BASE64 carregado no /tmp/google.json");
+  console.log("✔ GOOGLE_KEY_BASE64 carregado em:", keyFilePath);
 } else {
-  console.log("✔ Usando local:", keyFilePath);
+  console.log("✔ Usando GOOGLE_SERVICE_ACCOUNT local:", keyFilePath);
 }
-
 // ==========================================================
 // 🔵 AUTENTICAÇÃO GOOGLE
 // ==========================================================
