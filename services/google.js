@@ -4,6 +4,7 @@ dotenv.config();
 import { google } from "googleapis";
 import fs from "fs";
 
+let keyFilePath = "/google.json";
 // ==========================================================
 // 🔵 SUPORTE PARA GOOGLE_KEY_BASE64 (deploy no Render)
 // ==========================================================
@@ -13,13 +14,13 @@ if (process.env.GOOGLE_KEY_BASE64) {
   );
 
   // Criar arquivo temporário no ambiente do Render
-  let keyFilePath = "/tmp/google.json";
+  keyFilePath = "/google.json";
 
   fs.writeFileSync(keyFilePath, decoded, { encoding: "utf8" });
 
   console.log("✔ GOOGLE_KEY_BASE64 carregado no /tmp/google.json");
 } else {
-  console.log("✔ Usando local:", "google.json");
+  console.log("✔ Usando local:", keyFilePath);
 }
 
 // ==========================================================
