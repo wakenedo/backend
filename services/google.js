@@ -4,8 +4,31 @@ dotenv.config();
 import { google } from "googleapis";
 import fs from "fs";
 
+let keyFilePath = process.env.GOOGLE_SERVICE_ACCOUNT;
+
+// ==========================================================
+// 🔵 SUPORTE PARA GOOGLE_KEY_BASE64 (deploy no Render)
+// ==========================================================
+if (process.env.GOOGLE_KEY_BASE64) {
+  const decoded = Buffer.from(process.env.GOOGLE_KEY_BASE64, "base64").toString(
+    "utf8"
+  );
+
+  // Criar arquivo temporário no ambiente do Render
+  keyFilePath = "/tmp/google.json";
+
+  fs.writeFileSync(keyFilePath, decoded, { encoding: "utf8" });
+
+  console.log("✔ GOOGLE_KEY_BASE64 carregado no /tmp/google.json");
+} else {
+  console.log("✔ Usando GOOGLE_SERVICE_ACCOUNT local:", keyFilePath);
+}
+
+// ==========================================================
+// 🔵 AUTENTICAÇÃO GOOGLE
+// ==========================================================
 const auth = new google.auth.GoogleAuth({
-  keyFile: process.env.GOOGLE_SERVICE_ACCOUNT,
+  keyFile: keyFilePath,
   scopes: ["https://www.googleapis.com/auth/drive.readonly"],
 });
 
@@ -13,6 +36,9 @@ const drive = google.drive({ version: "v3", auth });
 
 export const GOOGLE_DRIVE_FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID;
 
+// ==========================================================
+// 🔵 LISTAR ARQUIVOS DO DRIVE
+// ==========================================================
 export async function listGoogleDriveFiles() {
   const res = await drive.files.list({
     q: `'${GOOGLE_DRIVE_FOLDER_ID}' in parents`,
@@ -22,11 +48,13 @@ export async function listGoogleDriveFiles() {
   return res.data.files;
 }
 
+// ==========================================================
+// 🔵 DOWNLOAD DE ARQUIVO DO DRIVE
+// ==========================================================
 export async function downloadGoogleFile(fileId, fileName) {
   const destPath = `./tmp_${fileName}`;
   const dest = fs.createWriteStream(destPath);
 
-  // Baixar arquivo como stream
   const response = await drive.files.get(
     { fileId, alt: "media" },
     { responseType: "stream" }
