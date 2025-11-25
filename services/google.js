@@ -41,7 +41,10 @@ if (process.env.GOOGLE_KEY_BASE64) {
 // ==========================================================
 const auth = new google.auth.GoogleAuth({
   keyFile: keyFilePath,
-  scopes: ["https://www.googleapis.com/auth/drive.readonly"],
+  scopes: [
+    "https://www.googleapis.com/auth/drive.readonly",
+    "https://www.googleapis.com/auth/drive",
+  ],
 });
 
 const drive = google.drive({ version: "v3", auth });
