@@ -10,6 +10,13 @@ import routes from "./api/routes.js";
 
 const app = express();
 
+// Liberar acesso do GitHub Pages
+app.use(
+  cors({
+    origin: ["https://wakenedo.github.io/frontend"],
+    credentials: false,
+  })
+);
 app.use(cors());
 app.use(express.json());
 app.use("/api", routes);
